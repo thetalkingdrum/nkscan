@@ -39,25 +39,31 @@ Load the same roll once and keep it loaded. Do one thumbnail plus frame 1 per ru
 :: 0. Control: stock behaviour, expect surplus +20
 set NKSCAN_EXP_WHOLE_LINES=
 set NKSCAN_EXP_THUMB_EXPOSURE=
-nkscan.exe scan --log debug --thumbnail --no-eject --frames 1 --dpi 666 --basename run0 2> run0.log
+nkscan.exe scan --log trace --thumbnail --no-eject --frames 1 --dpi 666 --basename run0 2> run0.log
 
 :: A. Whole-line READs
 set NKSCAN_EXP_WHOLE_LINES=1
-nkscan.exe scan --log debug --thumbnail --no-eject --frames 1 --dpi 666 --basename runA 2> runA.log
+nkscan.exe scan --log trace --thumbnail --no-eject --frames 1 --dpi 666 --basename runA 2> runA.log
 set NKSCAN_EXP_WHOLE_LINES=
 
 :: B. Nikon's thumbnail exposures
 set NKSCAN_EXP_THUMB_EXPOSURE=57616,103751,114022
-nkscan.exe scan --log debug --thumbnail --no-eject --frames 1 --dpi 666 --basename runB 2> runB.log
+nkscan.exe scan --log trace --thumbnail --no-eject --frames 1 --dpi 666 --basename runB 2> runB.log
 set NKSCAN_EXP_THUMB_EXPOSURE=
 
 :: AB. Both, only if A and B each help partly
 set NKSCAN_EXP_WHOLE_LINES=1
 set NKSCAN_EXP_THUMB_EXPOSURE=57616,103751,114022
-nkscan.exe scan --log debug --thumbnail --no-eject --frames 1 --dpi 666 --basename runAB 2> runAB.log
+nkscan.exe scan --log trace --thumbnail --no-eject --frames 1 --dpi 666 --basename runAB 2> runAB.log
 ```
 
-`--log debug` is enough; it carries the 8Eh and 8Fh bytes. `--log trace` also works but is much bigger.
+Use `--log trace`. It is about 0.4 MB per thumbnail run, and only trace shows that each switch reached the scanner:
+
+- **Run A:** the image READs read `want=130752`, where stock reads `want=131072`.
+- **Run B:** the `set window payload` lines for ids 1–3 end in the exposures you set:
+  - 57616 → `00 E1 10`
+  - 103751 → `01 95 47`
+  - 114022 → `01 BD 66`
 
 If a run's log doesn't contain an `experiment:` line for the switch you set, the variable didn't reach nkscan.exe.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Judge one nkscan run from its log alone (needs a --log debug or trace capture).
+"""Judge one nkscan run from its log alone (a --log trace capture; debug also works).
 
 log_check.py <nkscan log>
 
@@ -18,7 +18,7 @@ for l in lines:
         print(l.split(" INFO ", 1)[-1])
 sends = [log_bytes(l) for l in lines if "cdb for send 8f" in l]
 if not sends:
-    sys.exit("no 8Fh SEND in this log (was it captured at --log debug or trace?)")
+    sys.exit("no 8Fh SEND in this log (was it captured at --log trace?)")
 tops = [t[0] for t in table(sends[-1])]
 ph = [t % 6048 for t in tops[5:]]
 print(f"{len(tops)} frames; phase from frame 6: {ph}")
