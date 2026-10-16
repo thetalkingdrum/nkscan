@@ -7,6 +7,8 @@ yourself; Mats runs the scans and hands you the logs.
 
 ## Where things stand
 
+**Update 2026-10-16: Run A fixed it.** Surplus went from +19 to 0, and the phase spread from 840 to 84, with identical exposure. See the end of FINDINGS.md. Remaining tasks: confirm with the full-roll run, then make the proper fix in `read_granules`.
+
 - nkscan's framing code reproduces Nikon Scan byte for byte, given Nikon's thumbnail pass.
 - The drift comes from the thumbnail pass the LS-4000 + SA-30 returns to nkscan.
   - Its 8Eh perforation records outnumber the lines of film in the image: 5805 records for 5785 lines, a surplus of +20.

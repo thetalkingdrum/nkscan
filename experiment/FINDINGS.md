@@ -135,3 +135,20 @@ A host-side mitigation is possible but is not Nikon's behaviour: map image line 
 - `tools/make_fixture.py`, `tools/make_nk_fixture.py`: fixture builders.
 - `tools/resample.py`: line-for-line Python port of `resample.rs`.
 - The other `tools/*.py` and `data/*.txt` are the analyses cited above.
+
+## Result of the hardware runs (2026-10-16, same roll, same session, stock build vs `NKSCAN_EXP_WHOLE_LINES=1`)
+
+| | Run 0 (stock) | Run A (whole-line reads) |
+|---|---|---|
+| Thumbnail READ size | 131072 bytes (ends partway through a line) | 130752 bytes (227 × 576) |
+| 8Eh records vs filled lines | 5826 vs 5807, **surplus +19** | 5828 vs 5828, **surplus 0** |
+| Frame phase spread, frames 6–40 | **840**, steady fall 1890 → 1134 | **84**, flat 1848–1932 |
+| Thumbnail exposure R/G/B | 55848 / 101869 / 111887 | identical |
+
+**[V]** With exposure byte-identical, the READ length is the only difference between the runs. Whole-line READs make the scanner's 8Eh records match the image line for line, as in Nikon Scan's pass, and the frames hold one perforation phase down the roll.
+
+Exposure (candidate 2) is ruled out: Run 0's exposure was lower than Nikon's and the pass still drifted. Candidates 3 and 4 are moot.
+
+**Cause:** nkscan reads the image with lengths that are not a whole number of lines whenever the unit does not flag the requirement. On this LS-4000 ED (fw 1.10) the VPD C1h byte 4 is 01h, so the line bit is clear. Nikon Scan reads whole lines regardless. On the SA-30 thumbnail, partial-line READs make the perforation records outrun the image by about 20 lines over a roll.
+
+**Fix direction:** in `read_granules` (`src/protocol/image.rs`), always read in whole lines across every colour. A full-roll scan with the switch on looks right so far; confirmation is pending the end of that roll.
