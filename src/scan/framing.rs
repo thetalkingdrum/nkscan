@@ -408,6 +408,17 @@ pub fn discover_with(
                 "thumbnail"
             );
             let perfs = session.read_perforations()?;
+            // EXPERIMENT (SA-30 drift): one 8Eh record per thumbnail line of film is a good pass
+            {
+                let filled = pass.image(samples)?.cols;
+                let records = perfs.perfs.len();
+                info!(
+                    records,
+                    filled,
+                    surplus = records as i64 - filled as i64,
+                    "experiment: 8Eh records against filled thumbnail lines"
+                );
+            }
             // Measure before the resample
             let base_density = base_density(session, &pass.image(samples)?, film);
             let caps = session.capabilities();

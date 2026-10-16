@@ -303,6 +303,19 @@ impl Session {
                 w.exposure = meter::scale(w.exposure, f[c]);
             }
         }
+        // EXPERIMENT (SA-30 drift): NKSCAN_EXP_THUMB_EXPOSURE=r,g,b replaces the thumbnail exposures
+        if let Some(v) = std::env::var("NKSCAN_EXP_THUMB_EXPOSURE").ok().and_then(|v| {
+            v.split(',')
+                .map(|x| x.trim().parse::<u32>().ok())
+                .collect::<Option<Vec<_>>>()
+        }) {
+            for w in &mut windows {
+                if let Some(&e) = meter::color(w).and_then(|c| v.get(c)) {
+                    w.exposure = e;
+                }
+            }
+            tracing::info!(exposures = ?v, "experiment: thumbnail exposures fixed");
+        }
         debug!(?film, ?factors, "thumbnail exposure");
         self.scan_pass_with(&windows, THUMBNAIL_TIMEOUT, samples, on)
     }

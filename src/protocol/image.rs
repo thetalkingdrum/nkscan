@@ -260,6 +260,13 @@ fn read_granules(caps: &Capabilities, layout: &Layout, truncated: Option<&Trunca
     let rows = usize::from(layout.packed_rows);
     let whole_line = (layout.bytes_per_line() as usize * rows).max(1);
 
+    // EXPERIMENT (SA-30 drift): read in whole lines across every color, as Nikon Scan does,
+    // whatever the unit advertises
+    if std::env::var_os("NKSCAN_EXP_WHOLE_LINES").is_some() {
+        tracing::info!(whole_line, "experiment: READs in whole lines");
+        return Granules::every(whole_line);
+    }
+
     if transfer.contains(Transfer::READ_LINE_COLS) {
         // Each reading is one line across every color, so a READ can end
         // between two readings of the same line. A channel the unit reads one
