@@ -1,0 +1,26 @@
+name: Experiment Windows build
+
+# Builds nkscan.exe for the SA-30 drift experiment and keeps it as a workflow artifact
+on:
+    push:
+        branches: [experiment/sa30-thumbnail-drift]
+    workflow_dispatch:
+
+jobs:
+    windows:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Install the toolchain rust-toolchain.toml names
+              run: cargo --version
+            - uses: Swatinem/rust-cache@v2
+            - name: Build
+              shell: bash
+              env:
+                  RUSTFLAGS: -C target-feature=+crt-static
+                  NKSCAN_BUILD: exp-${{ github.sha }}
+              run: cargo build --release -p nkscan --features=cli --target x86_64-pc-windows-msvc
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: nkscan-exp-windows
+                  path: target/x86_64-pc-windows-msvc/release/nkscan.exe
